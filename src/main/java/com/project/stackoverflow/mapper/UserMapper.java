@@ -1,4 +1,4 @@
-package com.project.stackoverflow.util;
+package com.project.stackoverflow.mapper;
 
 import com.project.stackoverflow.model.UserModel;
 import org.springframework.jdbc.core.RowMapper;

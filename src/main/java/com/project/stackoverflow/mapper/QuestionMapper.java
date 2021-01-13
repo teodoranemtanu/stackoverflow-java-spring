@@ -1,10 +1,7 @@
-package com.project.stackoverflow.util;
+package com.project.stackoverflow.mapper;
 
 import com.project.stackoverflow.model.QuestionModel;
 import org.springframework.jdbc.core.RowMapper;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class QuestionMapper {
     public static final RowMapper<QuestionModel> questionMapper = (resultSet, i) -> new QuestionModel(resultSet.getString("id"),

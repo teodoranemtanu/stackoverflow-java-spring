@@ -2,8 +2,7 @@ package com.project.stackoverflow.repository;
 
 import com.project.stackoverflow.exception.UserException;
 import com.project.stackoverflow.model.UserModel;
-import com.project.stackoverflow.util.UserMapper;
-import org.springframework.jdbc.core.SqlOutParameter;
+import com.project.stackoverflow.mapper.UserMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;

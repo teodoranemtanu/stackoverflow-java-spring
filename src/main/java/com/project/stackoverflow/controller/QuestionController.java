@@ -17,8 +17,10 @@ public class QuestionController {
 
     @GetMapping("/questions")
     @ResponseBody
-    public List<QuestionModel> getQuestions(@RequestParam(required = false) String userId, @RequestParam(required = false) String communityId) {
-        return questionService.getQuestions(userId, communityId);
+    public List<QuestionModel> getQuestions(@RequestParam(required = false) String userId,
+                                            @RequestParam(required = false) String communityId,
+                                            @RequestParam(required = false) String searchText) {
+        return questionService.getQuestions(userId, communityId, searchText);
     }
 
     @PutMapping("/questions")
@@ -32,7 +34,9 @@ public class QuestionController {
     }
 
     @GetMapping("/questions/{id}")
+    @ResponseBody
     public QuestionModel getQuestionById(@PathVariable String id) {
         return questionService.getQuestionById(id);
     }
+
 }

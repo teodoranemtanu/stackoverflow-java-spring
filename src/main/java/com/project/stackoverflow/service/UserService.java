@@ -3,6 +3,7 @@ package com.project.stackoverflow.service;
 import com.project.stackoverflow.model.UserModel;
 import com.project.stackoverflow.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class UserService {
         return userRepository.getUsers(communityId);
     }
 
+    @Transactional
     public void saveUser(UserModel userModel) {
         userRepository.saveUser(userModel);
     }
@@ -24,6 +26,7 @@ public class UserService {
         return userRepository.getUserById(id);
     }
 
+    @Transactional
     public void removeUser(String id) {
         userRepository.removeUser(id);
     }
