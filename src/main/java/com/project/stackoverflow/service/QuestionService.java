@@ -11,16 +11,17 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-enum SearchType {
-    TITLE,
-    BODY,
-    TAGS
-}
 
 @Service
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final TagRepository tagRepository;
+
+    enum SearchType {
+        TITLE,
+        BODY,
+        TAGS
+    }
 
     public QuestionService(QuestionRepository questionRepository,
                            TagRepository tagRepository) {
@@ -32,7 +33,7 @@ public class QuestionService {
         List<QuestionModel> questions = questionRepository.getQuestions(userId, communityId);
         List<QuestionModel> result;
         if (searchText != null) {
-            result = this.searchQuestion(searchText, questions);
+            result = this.searchQuestions(searchText, questions);
         } else result = questions;
         return result;
     }
@@ -51,16 +52,16 @@ public class QuestionService {
         questionRepository.removeQuestion(id);
     }
 
-    private List<QuestionModel> searchQuestion(String input, List<QuestionModel> questions) {
-        List<String> splitInput = Arrays.asList(input.split("\\W")).stream()
-                .filter(x -> !x.isEmpty()).collect(Collectors.toList());
-        Set<String> noDuplicatesSplitInput = new HashSet<>(splitInput);
-
-        List<QuestionModel> matchingQuestions = this.searchQuestions(noDuplicatesSplitInput, questions);
-        return matchingQuestions;
+    public List<TagModel> getQuestionTags(String id) {
+        List<TagModel> questionTags = tagRepository.getTags(id, null);
+        return questionTags;
     }
 
-    private List<QuestionModel> searchQuestions(Set<String> splitInput, List<QuestionModel> questions) {
+    private List<QuestionModel> searchQuestions(String input, List<QuestionModel> questions) {
+        Set<String> splitInput = new HashSet<>(
+          Arrays.asList(input.split("\\W"))
+        );
+
         List<Boolean> titleMatches = questions.stream()
                 .map(question -> isMatchingQuestion(splitInput, question, SearchType.TITLE))
                 .collect(Collectors.toList());
@@ -95,9 +96,9 @@ public class QuestionService {
                     Arrays.asList(question.getBody().split("\\W"))
             );
         } else {
-            List<TagModel> questionTags = tagRepository.getTags(question.getId(), null);
+
             splitQuestion = new HashSet<>(
-                    questionTags.stream().map(x -> x.getTitle()).collect(Collectors.toList())
+                    getQuestionTags(question.getId()).stream().map(x -> x.getTitle()).collect(Collectors.toList())
             );
         }
 

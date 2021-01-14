@@ -20,7 +20,7 @@ public class AnswerRepository {
     }
 
     public List<AnswerModel> getAnswers(String questionId, String userId) {
-        String sql = "select id, body, created_at, question_id, user_id from answers";
+        String sql = "select id, body, created_at, question_id, user_id from answers a ";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 
         if (questionId != null) {

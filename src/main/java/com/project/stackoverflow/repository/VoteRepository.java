@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class VoteRepository {
@@ -58,6 +59,16 @@ public class VoteRepository {
     public void removeVote(String id) {
         String sql = "delete from votes where id =:id";
         MapSqlParameterSource parameters = new MapSqlParameterSource().addValue("id", id);
+        if(template.update(sql, parameters) != 1){
+            throw new VoteException();
+        }
+    }
+
+    public void removeVote(String answerId, String userId) {
+        String sql = "delete from votes where user_id = :user_id and answer_id = :answer_id";
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("answer_id", answerId)
+                .addValue("user_id", userId);
         if(template.update(sql, parameters) != 1){
             throw new VoteException();
         }

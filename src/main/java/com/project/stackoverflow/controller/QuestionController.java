@@ -1,6 +1,7 @@
 package com.project.stackoverflow.controller;
 
 import com.project.stackoverflow.model.QuestionModel;
+import com.project.stackoverflow.model.TagModel;
 import com.project.stackoverflow.service.QuestionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,4 +40,9 @@ public class QuestionController {
         return questionService.getQuestionById(id);
     }
 
+    @GetMapping("/questions/{id}/tags")
+    @ResponseBody
+    public List<TagModel> getQuestionTags(@PathVariable String id) {
+        return questionService.getQuestionTags(id);
+    }
 }

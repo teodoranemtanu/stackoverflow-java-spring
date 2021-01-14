@@ -17,8 +17,11 @@ public class AnswerController {
 
     @GetMapping("/answers")
     @ResponseBody
-    public List<AnswerModel> getAnswers(@RequestParam(required = false) String questionId, @RequestParam(required = false) String userId) {
-        return answerService.getAnswers(questionId, userId);
+    public List<AnswerModel> getAnswers(@RequestParam(required = false) String questionId,
+                                        @RequestParam(required = false) String userId,
+                                        @RequestParam(required = false) String filterBy,
+                                        @RequestParam(required = false) String sortBy) {
+        return answerService.getAnswers(questionId, userId, filterBy, sortBy);
     }
 
     @GetMapping("/answers/{id}")

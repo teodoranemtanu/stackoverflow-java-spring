@@ -12,6 +12,7 @@ public class AnswerModel {
     private LocalDateTime createdAt;
     private String questionId;
     private String userId;
+    private int voteCount;
 
     public AnswerModel() {
         this.id = UUID.randomUUID().toString();
@@ -23,6 +24,15 @@ public class AnswerModel {
         this.createdAt = created_at;
         this.questionId = questionId;
         this.userId = userId;
+    }
+
+    public AnswerModel(String id, String body, LocalDateTime createdAt, String questionId, String userId, int voteCount) {
+        this.id = id;
+        this.body = body;
+        this.createdAt = createdAt;
+        this.questionId = questionId;
+        this.userId = userId;
+        this.voteCount = voteCount;
     }
 
     public String getId() {
@@ -63,6 +73,14 @@ public class AnswerModel {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public int getVoteCount() {
+        return voteCount;
+    }
+
+    public void setVoteCount(int voteCount) {
+        this.voteCount = voteCount;
     }
 }
 

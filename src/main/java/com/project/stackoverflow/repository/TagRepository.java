@@ -2,9 +2,7 @@ package com.project.stackoverflow.repository;
 
 import com.project.stackoverflow.exception.QuestionException;
 import com.project.stackoverflow.exception.TagException;
-import com.project.stackoverflow.mapper.QuestionMapper;
 import com.project.stackoverflow.mapper.TagMapper;
-import com.project.stackoverflow.model.QuestionModel;
 import com.project.stackoverflow.model.TagModel;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
