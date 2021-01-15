@@ -1,7 +1,6 @@
 package com.project.stackoverflow.repository;
 
 import com.project.stackoverflow.exception.AnswerException;
-import com.project.stackoverflow.exception.QuestionException;
 import com.project.stackoverflow.model.AnswerModel;
 import com.project.stackoverflow.mapper.AnswerMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class AnswerRepository {
@@ -20,7 +20,7 @@ public class AnswerRepository {
     }
 
     public List<AnswerModel> getAnswers(String questionId, String userId) {
-        String sql = "select id, body, created_at, question_id, user_id from answers a ";
+        String sql = "select id, body, created_at, question_id, user_id from answers ";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 
         if (questionId != null) {
@@ -38,25 +38,16 @@ public class AnswerRepository {
         return template.query(sql, parameterSource, AnswerMapper.getAnswerMapper());
     }
 
-    public AnswerModel getAnswerById(String id) {
+    public Optional<AnswerModel> getAnswerById(String id) {
         String sql = "select id, body, created_at, question_id, user_id  from answers " +
                 "where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id);
         List<AnswerModel> result = template.query(sql, parameterSource, AnswerMapper.getAnswerMapper());
-        try {
-            return result.get(0);
-        } catch (Exception exception) {
-            throw new QuestionException();
-        }
+        return result.stream().findFirst();
     }
 
-    public void saveAnswer(AnswerModel answerModel) {
-        if (getAnswers(null, null)
-                .stream().anyMatch(x -> x.getId().equals(answerModel.getId()))) {
-            throw new QuestionException();
-        }
-
+    public boolean saveAnswer(AnswerModel answerModel) {
         String updateSql = "update answers set " +
                 "body = :body, " +
                 "created_at = :created_at, " +
@@ -74,16 +65,15 @@ public class AnswerRepository {
                 .addValue("user_id", answerModel.getUserId());
 
         if (template.update(updateSql, parameterSource) != 1) {
-            template.update(insertSql, parameterSource);
+            return (template.update(insertSql, parameterSource) == 1);
         }
+        return true;
     }
 
-    public void removeAnswer(String id) {
+    public boolean removeAnswer(String id) {
         String sql = "delete from answers where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", id);
-        if (template.update(sql, parameterSource) != 1) {
-            throw new AnswerException();
-        }
+        return template.update(sql, parameterSource) == 1;
     }
 
 }

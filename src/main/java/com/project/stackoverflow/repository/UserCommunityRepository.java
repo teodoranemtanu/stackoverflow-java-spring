@@ -21,14 +21,14 @@ public class UserCommunityRepository {
 
     public List<UserModel> getUsersFromCommunity(String communityId) {
         String sql = "select u.id, u.first_name, u.last_name, u.email, u.description, u.profile_picture " +
-                "from users u join users_communities uc on (u.id = uc.id) " +
+                "from users u join users_communities uc on (u.id = uc.user_id) " +
                 "where uc.community_id = :community_id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("community_id", communityId);
-        return template.query(sql, UserMapper.getUserMapper());
+        return template.query(sql, parameterSource, UserMapper.getUserMapper());
     }
 
-    public void joinCommunity(UserCommunityModel userCommunityModel) {
+    public boolean joinCommunity(UserCommunityModel userCommunityModel) {
         String insertSql = "insert into users_communities (user_id, community_id, joined_at) " +
                 "values (:user_id, :community_id, :joined_at) ";
 
@@ -37,16 +37,14 @@ public class UserCommunityRepository {
                 .addValue("community_id", userCommunityModel.getCommunityId())
                 .addValue("joined_at", userCommunityModel.getJoinedAt());
 
-        template.update(insertSql, parameterSource);
+        return template.update(insertSql, parameterSource) == 1;
     }
 
-    public void leaveCommunity(String communityId, String userId) {
+    public boolean leaveCommunity(String communityId, String userId) {
         String sql = "delete from users_communities where user_id = :user_id and community_id = :community_id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("user_id", userId)
                 .addValue("community_id", communityId);
-        if (template.update(sql, parameterSource) != 1) {
-            throw new CommunityException();
-        }
+        return template.update(sql, parameterSource) == 1;
     }
 }

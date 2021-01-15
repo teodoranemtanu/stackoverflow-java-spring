@@ -6,17 +6,15 @@ public class TagModel {
     private String id;
     private String questionId;
     private String title;
-    private String communityId;
 
     public TagModel() {
         this.id = UUID.randomUUID().toString();
     }
 
-    public TagModel(String id, String title, String questionId, String communityId) {
+    public TagModel(String id, String title, String questionId) {
         this.id = id;
         this.title = title;
         this.questionId = questionId;
-        this.communityId = communityId;
     }
 
     public String getId() {
@@ -41,13 +39,5 @@ public class TagModel {
 
     public void setQuestionId(String questionId) {
         this.questionId = questionId;
-    }
-
-    public String getCommunityId() {
-        return communityId;
-    }
-
-    public void setCommunityId(String communityId) {
-        this.communityId = communityId;
     }
 }

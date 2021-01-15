@@ -1,5 +1,7 @@
 package com.project.stackoverflow.service;
 
+import com.project.stackoverflow.exception.QuestionException;
+import com.project.stackoverflow.exception.TagException;
 import com.project.stackoverflow.model.QuestionModel;
 import com.project.stackoverflow.model.TagModel;
 import com.project.stackoverflow.repository.QuestionRepository;
@@ -7,6 +9,8 @@ import com.project.stackoverflow.repository.TagRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.HTML;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,17 +43,30 @@ public class QuestionService {
     }
 
     public QuestionModel getQuestionById(String id) {
-        return questionRepository.getQuestionById(id);
+        Optional<QuestionModel> question = questionRepository.getQuestionById(id);
+        if (!question.isPresent()) {
+            throw QuestionException.questionNotFound();
+        }
+        return question.get();
     }
 
     @Transactional
     public void saveQuestion(QuestionModel questionModel) {
-        questionRepository.saveQuestion(questionModel);
+        questionModel.setCreatedAt(LocalDateTime.now());
+        Optional<QuestionModel> existingQuestion = questionRepository.getQuestionById(questionModel.getId());
+        if(existingQuestion.isPresent()) {
+            throw QuestionException.questionAlreadyExists();
+        }
+        if(!questionRepository.saveQuestion(questionModel)) {
+            throw QuestionException.questionCouldNotBeSaved();
+        }
     }
 
     @Transactional
     public void removeQuestion(String id) {
-        questionRepository.removeQuestion(id);
+        if(!questionRepository.removeQuestion(id)) {
+            throw QuestionException.questionCouldNotBeRemoved();
+        }
     }
 
     public List<TagModel> getQuestionTags(String id) {
@@ -59,7 +76,7 @@ public class QuestionService {
 
     private List<QuestionModel> searchQuestions(String input, List<QuestionModel> questions) {
         Set<String> splitInput = new HashSet<>(
-          Arrays.asList(input.split("\\W"))
+                Arrays.asList(input.split("\\W"))
         );
 
         List<Boolean> titleMatches = questions.stream()
@@ -78,7 +95,7 @@ public class QuestionService {
                 matchingQuestions.add(questions.get(i));
             else if (bodyMatches.get(i))
                 matchingQuestions.add(questions.get(i));
-            else if(tagMatches.get(i))
+            else if (tagMatches.get(i))
                 matchingQuestions.add(questions.get(i));
         }
 
@@ -114,4 +131,19 @@ public class QuestionService {
         return percentage >= 0.2;
     }
 
+    public void addQuestionTag(TagModel tagModel) {
+        List<TagModel> existingTags = this.tagRepository.getTags(tagModel.getQuestionId(), null);
+        if(existingTags.stream().anyMatch(x -> x.getId().equals(tagModel.getId()))){
+            throw TagException.tagAlreadyExists();
+        }
+        if(!tagRepository.saveTag(tagModel)) {
+            throw TagException.tagCouldNotBeSaved();
+        }
+    }
+
+    public void removeQuestionTag(String tagId) {
+        if(!tagRepository.removeTag(tagId)) {
+            throw TagException.tagCouldNotBeRemoved();
+        }
+    }
 }

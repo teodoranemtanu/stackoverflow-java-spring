@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class CommunityRepository {
@@ -25,52 +26,32 @@ public class CommunityRepository {
         return template.query(sql, parameterSource, CommunityMapper.getCommunityMapper());
     }
 
-    public CommunityModel getCommunityById(String id) {
+    public Optional<CommunityModel> getCommunityById(String id) {
         String sql = "select id, title from communities " +
                 "where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id);
         List<CommunityModel> result = template.query(sql, parameterSource, CommunityMapper.getCommunityMapper());
-        try {
-            return result.get(0);
-        } catch (Exception exception) {
-            throw new CommunityException();
-        }
+        return result.stream().findFirst();
     }
 
-    public void saveCommunity(CommunityModel communityModel) {
-        if (getCommunities()
-                .stream().anyMatch(x -> x.getId().equals(communityModel.getId()))) {
-            throw new CommunityException();
-        }
-
-        String updateSql = "update questions set " +
-                "title = :title, " +
-                "body = :body, " +
-                "active = :active, " +
-                "created_at = :created_at, " +
-                "user_id = :user_id, " +
-                "community_id = :community_id " +
-                "where id = :id";
-        String insertSql = "insert into questions (id, title) " +
-                "values (:id, :title) ";
+    public boolean saveCommunity(CommunityModel communityModel) {
+        String updateSql = "update communities set title = :title where id = :id";
+        String insertSql = "insert into communities (id, title) values (:id, :title) ";
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", communityModel.getId())
                 .addValue("title", communityModel.getTitle());
 
         if (template.update(updateSql, parameterSource) != 1) {
-            template.update(insertSql, parameterSource);
+            return (template.update(insertSql, parameterSource) == 1);
         }
+        return true;
     }
 
-    public void removeCommunity(String id) {
+    public boolean removeCommunity(String id) {
         String sql = "delete from communities where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", id);
-        if (template.update(sql, parameterSource) != 1) {
-            throw new CommunityException();
-        }
+        return template.update(sql, parameterSource) == 1;
     }
-
-
 }

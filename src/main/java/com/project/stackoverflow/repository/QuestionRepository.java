@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class QuestionRepository {
@@ -40,25 +41,15 @@ public class QuestionRepository {
         return template.query(sql, parameterSource, QuestionMapper.getQuestionMapper());
     }
 
-    public QuestionModel getQuestionById(String id) {
+    public Optional<QuestionModel> getQuestionById(String id) {
         String sql = "select id, title, body, created_at, active, user_id, community_id from questions " +
                 "where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id);
-        List<QuestionModel> result = template.query(sql, parameterSource, QuestionMapper.getQuestionMapper());
-        try {
-            return result.get(0);
-        } catch (Exception exception) {
-            throw new QuestionException();
-        }
+        return template.query(sql, parameterSource, QuestionMapper.getQuestionMapper()).stream().findFirst();
     }
 
-    public void saveQuestion(QuestionModel questionModel) {
-        if (getQuestions(null, null)
-                .stream().anyMatch(x -> x.getId().equals(questionModel.getId()))) {
-            throw new QuestionException();
-        }
-
+    public boolean saveQuestion(QuestionModel questionModel) {
         String updateSql = "update questions set " +
                 "title = :title, " +
                 "body = :body, " +
@@ -80,16 +71,15 @@ public class QuestionRepository {
                 .addValue("community_id", questionModel.getCommunityId());
 
         if (template.update(updateSql, parameterSource) != 1) {
-            template.update(insertSql, parameterSource);
+            return (template.update(insertSql, parameterSource) == 1);
         }
+        return true;
     }
 
-    public void removeQuestion(String id) {
+    public boolean removeQuestion(String id) {
         String sql = "delete from questions where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", id);
-        if (template.update(sql, parameterSource) != 1) {
-            throw new QuestionException();
-        }
+        return template.update(sql, parameterSource) == 1;
     }
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserRepository {
@@ -29,11 +30,7 @@ public class UserRepository {
         return result;
     }
 
-    public void saveUser(UserModel userModel) {
-        if (getUsers(null).stream().anyMatch(user -> user.getId().equals(userModel.getDescription()))) {
-            throw new UserException();
-        }
-
+    public boolean saveUser(UserModel userModel) {
         String updateSql = "update users set " +
                 "first_name = :first_name, " +
                 "last_name = :last_name, " +
@@ -53,28 +50,23 @@ public class UserRepository {
                 .addValue("profile_picture", userModel.getProfilePicture());
 
         if (template.update(updateSql, parameterSource) != 1) {
-            template.update(insertSql, parameterSource);
+            return (template.update(insertSql, parameterSource) == 1);
         }
+        return true;
     }
 
-    public void removeUser(String id) {
+    public boolean removeUser(String id) {
         String sql = "delete from users where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", id);
-        if (template.update(sql, parameterSource) != 1) {
-            throw new UserException();
-        }
+        return template.update(sql, parameterSource) == 1;
     }
 
-    public UserModel getUserById(String id) {
+    public Optional<UserModel> getUserById(String id) {
         String sql = "select id, first_name, last_name, email, description, profile_picture from users " +
                 "where id = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id);
         List<UserModel> result = template.query(sql, parameterSource, UserMapper.getUserMapper());
-        try {
-            return result.get(0);
-        } catch(Exception exception) {
-         throw new UserException();
-        }
+        return result.stream().findFirst();
     }
 }

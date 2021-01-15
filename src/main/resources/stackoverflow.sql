@@ -2,8 +2,8 @@ CREATE TABLE `users`
 (
     `id`              char(36)     NOT NULL,
     `first_name`      varchar(100) NOT NULL,
-    `last_name`       varchar(100) DEFAULT NULL,
-    `email`           varchar(100) DEFAULT NULL,
+    `last_name`       varchar(100) NOT NULL,
+    `email`           varchar(100) NOT NULL,
     PRIMARY KEY (`id`),
     `description`     varchar(100) DEFAULT NULL,
     `profile_picture` varchar(100) DEFAULT NULL
@@ -58,19 +58,16 @@ CREATE TABLE `votes`
     CONSTRAINT `votes_FK_answers` FOREIGN KEY (`answer_id`) REFERENCES `answers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE `tags`
+create table tags
 (
-    `title`        varchar(100) NOT NULL,
-    `id`           char(36)     NOT NULL,
-    `question_id`  char(36),
-    `community_id` char(36),
-    PRIMARY KEY (`id`),
-    KEY            `tags_FK_questions` (`question_id`),
-    KEY            `tags_FK_community` (`community_id`),
-    CONSTRAINT `tags_FK_questions` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`),
-    CONSTRAINT `tags_FK_community` FOREIGN KEY (`community_id`) REFERENCES `communities` (`id`)
+    title        varchar(100) not null,
+    id           char(36)     not null
+        primary key,
+    question_id  char(36)     null,
+    community_id char(36)     null,
+    constraint tags_FK_questions
+        foreign key (question_id) references questions (id)
 );
-
 CREATE TABLE `users_communities`
 (
     `user_id`      char(36) NOT NULL,

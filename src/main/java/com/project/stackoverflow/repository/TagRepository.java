@@ -38,27 +38,23 @@ public class TagRepository {
         return template.query(sql, parameterSource, TagMapper.getTagMapper());
     }
 
-    public void saveTag(TagModel tagModel) {
-        if(getTags(tagModel.getQuestionId(), tagModel.getCommunityId()).stream().anyMatch(x -> x.getId().equals(tagModel.getId()))) {
-            throw new TagException();
-        }
-
+    public boolean saveTag(TagModel tagModel) {
         String updateSql = "update tags set " +
                 "title = :title, " +
-                "question_id = :question_id" +
-                "community_id = :community_id " +
+                "question_id = :question_id " +
                 "where id = :id";
-        String insertSql = "insert into tags (id, title, question_id, community_id) " +
-                "values (:id, :title, :question_id, :community_id) ";
+        String insertSql = "insert into tags (id, title, question_id) " +
+                "values (:id, :title, :question_id) ";
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", tagModel.getId())
-                .addValue("question_id", tagModel.getQuestionId())
-                .addValue("community_id", tagModel.getCommunityId());
+                .addValue("title", tagModel.getTitle())
+                .addValue("question_id", tagModel.getQuestionId());
 
         if (template.update(updateSql, parameterSource) != 1) {
-            template.update(insertSql, parameterSource);
+            return (template.update(insertSql, parameterSource) == 1);
         }
+        return true;
     }
 
     public boolean removeTag(String id) {

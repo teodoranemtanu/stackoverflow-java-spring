@@ -3,6 +3,8 @@ package com.project.stackoverflow.controller;
 import com.project.stackoverflow.model.QuestionModel;
 import com.project.stackoverflow.model.TagModel;
 import com.project.stackoverflow.service.QuestionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,32 +19,46 @@ public class QuestionController {
     }
 
     @GetMapping("/questions")
-    @ResponseBody
-    public List<QuestionModel> getQuestions(@RequestParam(required = false) String userId,
-                                            @RequestParam(required = false) String communityId,
-                                            @RequestParam(required = false) String searchText) {
-        return questionService.getQuestions(userId, communityId, searchText);
+    public ResponseEntity<List<QuestionModel>> getQuestions(@RequestParam(required = false) String userId,
+                                                           @RequestParam(required = false) String communityId,
+                                                           @RequestParam(required = false) String searchText) {
+        List<QuestionModel> questions = questionService.getQuestions(userId, communityId, searchText);
+        return questions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(questions);
     }
 
     @PutMapping("/questions")
-    public void addQuestion(@RequestBody QuestionModel questionModel) {
+    public ResponseEntity<Void> addQuestion(@RequestBody QuestionModel questionModel) {
         questionService.saveQuestion(questionModel);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @DeleteMapping("/questions/{id}")
-    public void removeQuestion(@PathVariable String id) {
+    public ResponseEntity<Void> removeQuestion(@PathVariable String id) {
         questionService.removeQuestion(id);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @GetMapping("/questions/{id}")
-    @ResponseBody
-    public QuestionModel getQuestionById(@PathVariable String id) {
-        return questionService.getQuestionById(id);
+    public ResponseEntity<QuestionModel> getQuestionById(@PathVariable String id) {
+        QuestionModel question = questionService.getQuestionById(id);
+        return ResponseEntity.ok(question);
     }
 
     @GetMapping("/questions/{id}/tags")
-    @ResponseBody
-    public List<TagModel> getQuestionTags(@PathVariable String id) {
-        return questionService.getQuestionTags(id);
+    public ResponseEntity<List<TagModel>> getQuestionTags(@PathVariable String id) {
+        List<TagModel> tags = questionService.getQuestionTags(id);
+        return tags.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(tags);
+    }
+
+    @PostMapping("/questions/tags")
+    public ResponseEntity<Void> addQuestionTag(@RequestBody TagModel tagModel) {
+        questionService.addQuestionTag(tagModel);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @DeleteMapping("/questions/tags/{tagId}")
+    public ResponseEntity<Void> removeQuestionTag(@PathVariable String tagId) {
+        questionService.removeQuestionTag(tagId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

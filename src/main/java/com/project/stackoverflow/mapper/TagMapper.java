@@ -7,8 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 public class TagMapper {
     public static final RowMapper<TagModel> tagMapper = (resultSet, i) -> new TagModel(resultSet.getString("id"),
             resultSet.getString("title"),
-            resultSet.getString("question_id"),
-            resultSet.getString("community_id")
+            resultSet.getString("question_id")
     );
 
     public static RowMapper<TagModel> getTagMapper() {

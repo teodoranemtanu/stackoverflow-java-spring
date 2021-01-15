@@ -2,7 +2,10 @@ package com.project.stackoverflow.controller;
 
 import com.project.stackoverflow.model.CommunityModel;
 import com.project.stackoverflow.model.QuestionModel;
+import com.project.stackoverflow.model.UserModel;
 import com.project.stackoverflow.service.CommunityService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,33 +19,45 @@ public class CommunityController {
         this.communityService = communityService;
     }
 
+    @GetMapping("/communities")
+    public ResponseEntity<List<CommunityModel>> getCommunities(@RequestParam(required = false) String id) {
+        List<CommunityModel> communities = communityService.getCommunities(id);
+        return communities.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(communities);
+    }
+
     @PutMapping("/communities")
-    public void saveCommunity(@RequestBody CommunityModel communityModel) {
+    public ResponseEntity<Void> saveCommunity(@RequestBody CommunityModel communityModel) {
         this.communityService.saveCommunity(communityModel);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @DeleteMapping("/communities/{id}")
-    public void removeCommunity(@PathVariable String id) {
+    public ResponseEntity<Void> removeCommunity(@PathVariable String id) {
         this.communityService.removeCommunity(id);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @PostMapping("/communities/{communityId}/users/{userId}")
-    public void joinCommunity(@PathVariable String communityId, @PathVariable String userId) {
+    public ResponseEntity<Void> joinCommunity(@PathVariable String communityId, @PathVariable String userId) {
         this.communityService.joinCommunity(communityId, userId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @DeleteMapping("/communities/{communityId}/users/{userId}")
-    public void leaveCommunity(@PathVariable String communityId, @PathVariable String userId) {
+    public ResponseEntity<Void> leaveCommunity(@PathVariable String communityId, @PathVariable String userId) {
         this.communityService.leaveCommunity(communityId, userId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
-    @GetMapping("/communities/{communityId/users}")
-    public void getUsersFromCommunity(@PathVariable String communityId) {
-        this.communityService.getUsersFromCommunity(communityId);
+    @GetMapping("/communities/{communityId}/users")
+    public ResponseEntity<List<UserModel>> getUsersFromCommunity(@PathVariable String communityId) {
+        List<UserModel> users = this.communityService.getUsersFromCommunity(communityId);
+        return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
 
-    @GetMapping("/communities/{communityId}/questions}")
-    public List<QuestionModel> getQuestionsFromCommunity(@PathVariable String communityId) {
-        return this.communityService.getQuestionsFromCommunity(communityId);
+    @GetMapping("/communities/{communityId}/questions")
+    public ResponseEntity<List<QuestionModel>> getQuestionsFromCommunity(@PathVariable String communityId) {
+        List<QuestionModel> questions = this.communityService.getQuestionsFromCommunity(communityId);
+        return questions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(questions);
     }
 }

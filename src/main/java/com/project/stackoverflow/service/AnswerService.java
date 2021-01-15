@@ -1,5 +1,6 @@
 package com.project.stackoverflow.service;
 
+import com.project.stackoverflow.exception.AnswerException;
 import com.project.stackoverflow.model.AnswerModel;
 import com.project.stackoverflow.model.VoteModel;
 import com.project.stackoverflow.repository.AnswerRepository;
@@ -7,15 +8,17 @@ import com.project.stackoverflow.repository.VoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class AnswerService {
-    private AnswerRepository answerRepository;
-    private VoteRepository voteRepository;
+    private final AnswerRepository answerRepository;
+    private final VoteRepository voteRepository;
 
     public AnswerService(AnswerRepository answerRepository,
                          VoteRepository voteRepository) {
@@ -41,7 +44,7 @@ public class AnswerService {
                     return b.getCreatedAt().compareTo(a.getCreatedAt());
                 }
             });
-        } else if(sortBy != null && sortBy.equals("body")) {
+        } else if (sortBy != null && sortBy.equals("body")) {
             Collections.sort(results, new Comparator<AnswerModel>() {
                 public int compare(AnswerModel a, AnswerModel b) {
                     return b.getBody().compareTo(a.getBody());
@@ -54,22 +57,36 @@ public class AnswerService {
                 }
             });
         }
-
         return results;
     }
 
     public AnswerModel getAnswerById(String id) {
-        return answerRepository.getAnswerById(id);
+        Optional<AnswerModel> answer = answerRepository.getAnswerById(id);
+        if (!answer.isPresent()) {
+            throw AnswerException.answerNotFound();
+        }
+        List<VoteModel> votes = voteRepository.getVotes(answer.get().getId(), null);
+        answer.get().setVoteCount(votes.size());
+        return answer.get();
     }
 
     @Transactional
     public void saveAnswer(AnswerModel answerModel) {
+        if (answerModel.getCreatedAt() == null) {
+            answerModel.setCreatedAt(LocalDateTime.now());
+        }
+        Optional<AnswerModel> existingAnswer = answerRepository.getAnswerById(answerModel.getId());
+        if (existingAnswer.isPresent()) {
+            throw AnswerException.answerAlreadyExists();
+        }
         answerRepository.saveAnswer(answerModel);
     }
 
     @Transactional
     public void removeAnswer(String id) {
-        answerRepository.removeAnswer(id);
+        if (!answerRepository.removeAnswer(id)) {
+            throw AnswerException.answerCouldNotBeRemoved();
+        }
     }
 
     @Transactional
@@ -77,12 +94,17 @@ public class AnswerService {
         VoteModel voteModel = new VoteModel();
         voteModel.setAnswerId(answerId);
         voteModel.setUserId(userId);
-        voteRepository.saveVote(voteModel);
+        if (!voteRepository.saveVote(voteModel)) {
+            throw AnswerException.voteCouldNotBeRemoved();
+        }
+        ;
     }
 
     @Transactional
     public void unvoteAnswer(String answerId, String userId) {
-        voteRepository.removeVote(answerId, userId);
+        if (!voteRepository.removeVote(answerId, userId)) {
+            throw AnswerException.voteCouldNotBeRemoved();
+        }
     }
 
     public List<VoteModel> getAnswerVotes(String answerId) {
